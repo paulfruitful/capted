@@ -1,4 +1,4 @@
-import { Inter,Pacifico } from "next/font/google";
+import { Inter,Kanit,Pacifico } from "next/font/google";
 
 import "./globals.css";
 
@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`grid ${inter.className}`}>
-      <Header font={pacifico}/>
+      <Header font={pacifico} />
         {children}
         </body>
     </html>
