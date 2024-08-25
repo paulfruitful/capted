@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 
 // Set the path to the local ffmpeg binary
-const ffmpegPath = 'C:\\ffmpeg\\ffmpeg-2024-08-21-git-9d15fe77e3-essentials_build\\bin\\ffmpeg.exe';
+const ffmpegPath = process.env.FFMPEG_PATH;
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 export async function POST(request) {
@@ -54,7 +54,7 @@ export async function POST(request) {
           console.log('Temporary file deleted successfully');
         }
       });
-      
+
     return NextResponse.json({ message: result });
 
   } catch (error) {
