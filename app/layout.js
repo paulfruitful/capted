@@ -6,7 +6,7 @@ import Header from "./_components/Header";
 const inter = Inter({ subsets: ["latin"] });
 const pacifico=Pacifico({subsets:['latin'], weight:['400']})
 export const metadata = {
-  title: "Captedddd",
+  title: "Jelly-O",
   description: "Caption & Translate Your Videos Flawlessly",
 };
 
