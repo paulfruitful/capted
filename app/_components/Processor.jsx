@@ -3,26 +3,80 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload } from '@fortawesome/free-solid-svg-icons'
 import { useState } from 'react'
-const fs = require('../_lib/fs');
-const ffmpeg = require('fluent-ffmpeg');
 const Processor = () => {
 
-  const extractAudioFromPath=(path)=>{
-    try{
-    ffmpeg(videoPath).extractAudio().setFormat('mp3').setAudioCodec('aac').setAudioBitrate(128).setAudioChannels(2).save('/public');
-    }catch(err){
-      throw new Error(err)
+  const [videoLink, setVideoLink] = useState('');
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState('');
+
+  const handleFileChange = (e) => {
+    console.log('Iwascalled')
+    const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const base64String = reader.result.split(',')[1]; // Remove the "data:*/*;base64," prefix
+    // Prepare the JSON payload
+    const payload = JSON.stringify({
+      fileName: file.name,
+      fileType: file.type,
+      fileData: base64String,
+    });
+    console.log('Iwascalledagain')
+    setFile(payload)
+    console.log('Iwascalledandagain')
+    handleProcessVideo()
+    console.log('Iwascalled6')
+  };
+}
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleProcessVideo();
     }
+  };
 
-  }
+  const handleProcessVideo = async () => {
+    try {
+      
+      let path;
+      if (videoLink) {
+        path={'videoPath':videoLink};
+      } else if (file) {
+        path={'videoPath': file};
+      } else {
+        setMessage('Please provide a video link or upload a file.');
+        return;
+      }
 
-  const [file,setFile]=useState()
+      const response = await fetch('/api/process-video', {
+        headers:{
+          "Content-Type":"application/json"
+        },
+        method: 'POST',
+        body: JSON.stringify(path),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Something went wrong');
+      }
+
+      const data = await response.json();
+      setMessage(data.message);
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
+
   return (
     <div className='flex flex-col w-full overflow-hidden  justify-center items-center h-[50vh] lg:h-[100vh] lg:h-[80vh]'>
        <span className="text-2xl lg:text-4xl text-gray-900  text-center font-bold p-3 mt-[7rem] mb-3">Drop Your Video</span>
        <div className="flex w-full items-center justify-center p-3">
-      <input type="search" onKeyPress={(e)=>e.key=='Enter'?'':''} onChange={(e)=>setFile(e.target.value)} placeholder='Video Link' className='text-gray-900  text-sm placeholder-gray-600 lg:text-md bg-transparent rounded-md justify-self-center self-center border-2  border-gray-900 border-solid py-2 text-start lg:text-lg px-3 lg:p-2 lg:border-[3px] w-3/4 lg:w-1/3' />
-      <button  className="bg-black ml-3 py-2  hover:bg-gray-400 active:bg-gray-400 text-center lg:text-lg text-sm  px-3  rounded-lg text-white flex"><span  className='lg:flex font-bold hidden'>Upload</span> <span className='text-center text-2xl ml-2'><FontAwesomeIcon icon={faUpload}/></span></button>
+      <input type="search" onKeyPress={handleKeyPress} onChange={(e)=>setVideoLink(e.target.value)} placeholder='Video Link' className='text-gray-900  text-sm placeholder-gray-600 lg:text-md bg-transparent rounded-md justify-self-center self-center border-2  border-gray-900 border-solid py-2 text-start lg:text-lg px-3 lg:p-2 lg:border-[3px] w-3/4 lg:w-1/3' />
+      <button onClick={handleProcessVideo}  className="bg-black ml-3 py-2  hover:bg-gray-400 active:bg-gray-400 text-center lg:text-lg text-sm  px-3  rounded-lg text-white flex"><span  className='lg:flex font-bold hidden'>Upload</span> <span className='text-center text-2xl ml-2'><FontAwesomeIcon icon={faUpload}/></span></button>
       </div>
       <span className='text-xl p-3'>Or</span>
       <div className='flex w-full items-center justify-center p-3' >
@@ -34,7 +88,8 @@ const Processor = () => {
       <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
       <p class="text-xs text-gray-500">Mp4, Mkv(max. 800x400px)</p>
     </div>
-    <input id="file-upload" on type="file" class="hidden" />
+    <input id="file-upload" on type="file" 
+            onChange={handleFileChange} class="hidden" />
   </label>
       </div>
 
